@@ -12,9 +12,11 @@ export class PingCommand extends Command {
     }
 
     public async messageRun(message: Message) {
+        this.container.logger.debug(`Ping command triggered by ${message.author.tag} in ${message.guild?.name || 'DM'}`);
         const ms = await message.reply('Ping?');
         const content = `Pong! Bot Latency is ${Math.round(this.container.client.ws.ping)}ms. API Latency is ${ms.createdTimestamp - message.createdTimestamp}ms.`;
+        this.container.logger.debug(`Ping command response sent: ${content}`);
         
-            return ms.edit(content);
+        return ms.edit(content);
     }
 }
