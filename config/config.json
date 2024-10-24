@@ -1,7 +1,5 @@
 {
-    "developers": ["437585514267279361"],
     "client": {
-        "id": "1291371209283342459",
         "intents": [
             "Guilds",
             "GuildMessages",

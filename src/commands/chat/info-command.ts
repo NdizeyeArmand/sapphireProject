@@ -1,39 +1,51 @@
-import { ChatInputCommandInteraction, EmbedBuilder, PermissionsString } from 'discord.js';
+import { Command } from '@sapphire/framework';
+import { EmbedBuilder } from 'discord.js';
+import { InfoOption } from '../../lib/models/enum-helpers/index.js';
+import { Language } from '../../lib/models/enum-helpers/index.js';
+import { Lang } from '../../lib/services/index.js';
 
-import { InfoOption } from '../../enums/index.js';
-import { Language } from '../../models/enum-helpers/index.js';
-import { EventData } from '../../models/internal-models.js';
-import { Lang } from '../../services/index.js';
-import { InteractionUtils } from '../../utils/index.js';
-import { Command, CommandDeferType } from '../index.js';
+export class InfoCommand extends Command {
+    public constructor(context: Command.LoaderContext) {
+        super(context, {
+            name: 'info',
+            description: 'Shows bot information'
+        });
+    }
 
-export class InfoCommand implements Command {
-    public names = [Lang.getRef('chatCommands.info', Language.Default)];
-    public deferType = CommandDeferType.HIDDEN;
-    public requireClientPerms: PermissionsString[] = [];
+    public override registerApplicationCommands(registry: Command.Registry) {
+        registry.registerChatInputCommand(builder => 
+            builder
+                .setName(this.name)
+                .setDescription(this.description)
+                .addStringOption(option =>
+                    option
+                        .setName('option')
+                        .setDescription('Info option to show')
+                        .setRequired(true)
+                        .addChoices(
+                            { name: 'About', value: InfoOption.ABOUT },
+                            { name: 'Translate', value: InfoOption.TRANSLATE }
+                        )
+                )
+        );
+    }
 
-    public async execute(intr: ChatInputCommandInteraction, data: EventData): Promise<void> {
-        let args = {
-            option: intr.options.getString(
-                Lang.getRef('arguments.option', Language.Default)
-            ) as InfoOption,
-        };
-
+    public async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+        const option = interaction.options.getString('option', true) as InfoOption;
         let embed: EmbedBuilder;
-        switch (args.option) {
+
+        switch (option) {
             case InfoOption.ABOUT: {
-                embed = Lang.getEmbed('displayEmbeds.about', data.lang);
+                embed = Lang.getEmbed('displayEmbeds.about', Language.Default);
                 break;
             }
             case InfoOption.TRANSLATE: {
-                embed = Lang.getEmbed('displayEmbeds.translate', data.lang);
+                embed = Lang.getEmbed('displayEmbeds.translate', Language.Default);
                 for (let langCode of Language.Enabled) {
-                    embed.addFields([
-                        {
-                            name: Language.Data[langCode].nativeName,
-                            value: Lang.getRef('meta.translators', langCode),
-                        },
-                    ]);
+                    embed.addFields([{
+                        name: Language.Data[langCode].nativeName,
+                        value: Lang.getRef('meta.translators', langCode)
+                    }]);
                 }
                 break;
             }
@@ -42,6 +54,6 @@ export class InfoCommand implements Command {
             }
         }
 
-        await InteractionUtils.send(intr, embed);
+        await interaction.reply({ embeds: [embed], ephemeral: true });
     }
 }

@@ -1,32 +1,32 @@
-import { DMChannel, PermissionsString, UserContextMenuCommandInteraction } from 'discord.js';
-import { RateLimiter } from 'discord.js-rate-limiter';
-import { DateTime } from 'luxon';
+import { Command } from '@sapphire/framework';
 
-import { Language } from '../../models/enum-helpers/index.js';
-import { EventData } from '../../models/internal-models.js';
-import { Lang } from '../../services/index.js';
-import { InteractionUtils } from '../../utils/index.js';
-import { Command, CommandDeferType } from '../index.js';
+export class ViewDateJoinedCommand extends Command {
+    public constructor(context: Command.LoaderContext) {
+        super(context, {
+            name: 'joined',
+            description: 'Shows when a user joined the server'
+        });
+    }
 
-export class ViewDateJoined implements Command {
-    public names = [Lang.getRef('userCommands.viewDateJoined', Language.Default)];
-    public cooldown = new RateLimiter(1, 5000);
-    public deferType = CommandDeferType.HIDDEN;
-    public requireClientPerms: PermissionsString[] = [];
-
-    public async execute(intr: UserContextMenuCommandInteraction, data: EventData): Promise<void> {
-        let joinDate: Date;
-        if (!(intr.channel instanceof DMChannel)) {
-            let member = await intr.guild.members.fetch(intr.targetUser.id);
-            joinDate = member.joinedAt;
-        } else joinDate = intr.targetUser.createdAt;
-
-        await InteractionUtils.send(
-            intr,
-            Lang.getEmbed('displayEmbeds.viewDateJoined', data.lang, {
-                TARGET: intr.targetUser.toString(),
-                DATE: DateTime.fromJSDate(joinDate).toLocaleString(DateTime.DATE_HUGE),
-            })
+    public override registerApplicationCommands(registry: Command.Registry) {
+        registry.registerChatInputCommand(builder =>
+            builder
+                .setName(this.name)
+                .setDescription(this.description)
+                .addUserOption(option =>
+                    option
+                        .setName('user')
+                        .setDescription('User to check join date for')
+                        .setRequired(false)
+                )
         );
+    }
+
+    public async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
+        const targetUser = interaction.options.getUser('user') ?? interaction.user;
+        const member = await interaction.guild?.members.fetch(targetUser.id);
+        const joinedAt = member?.joinedAt?.toLocaleDateString() ?? 'Unknown';
+        
+        await interaction.reply(`${targetUser.tag} joined on ${joinedAt}`);
     }
 }

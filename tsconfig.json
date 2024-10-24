@@ -1,19 +1,33 @@
 {
     "compilerOptions": {
         "target": "es2021",
-        "module": "es2022",
+        "module": "NodeNext",
         "lib": ["es2021"],
         "declaration": true,
         "sourceMap": true,
         "outDir": "./dist",
         "rootDir": "./src",
-        "strict": false,
-        "moduleResolution": "node",
+        "strict": true,
+        "moduleResolution": "NodeNext",
+        "importHelpers": true,
+        "resolveJsonModule": true,
         "esModuleInterop": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true
+        "forceConsistentCasingInFileNames": true,
+        "typeRoots": ["./node_modules/@types", "./src/lib/types"],
+        "baseUrl": "src",
+        "paths": {
+            "*": ["./src/lib/types/*"],
+            "#lib/*": ["lib/*"],
+            "#utils/*": ["lib/utils/*"],
+            "#models/*": ["lib/models/*"]
+        }
     },
+    "include": [
+        "src/**/*",
+        "config/**/*"
+    ],
     "exclude": ["dist", "node_modules", "tests"]
-  }
+}

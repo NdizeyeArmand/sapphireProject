@@ -1,1 +1,1 @@
-export { ViewDateJoined } from './view-date-joined.js';
+export * from './view-date-joined.js';
